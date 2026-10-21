@@ -1,0 +1,30 @@
+name: jugnu
+description: >-
+  Small helpers for go_router: typed results, async route guards, typed
+  params, shell tab helpers, testing utilities and a deep link generator.
+version: 1.0.0
+repository: https://github.com/sanket-manohar/jugnu
+issue_tracker: https://github.com/sanket-manohar/jugnu/issues
+topics:
+  - go-router
+  - navigation
+  - routing
+  - deep-linking
+  - testing
+
+environment:
+  sdk: ^3.12.0
+  flutter: ">=3.44.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
+  go_router: ^18.0.0
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+
+executables:
+  deeplink:

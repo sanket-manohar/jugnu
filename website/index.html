@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>jugnu</title>
+<meta name="description" content="jugnu: a Dart package and an editor extension for go_router apps.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='116' fill='%2315181b'/%3E%3Cpath d='M306 226 V338 Q306 404 240 404 Q194 404 172 368' fill='none' stroke='%23eceae4' stroke-width='46' stroke-linecap='round'/%3E%3Ccircle cx='306' cy='142' r='31' fill='%23f4c95d'/%3E%3C/svg%3E">
+<style>
+  /* Layout: package docs. Slim sidebar, one compact reading column, nothing extra. */
+  :root {
+    --bg: #fbfbfa;
+    --surface: #f2f3f1;
+    --fg: #17191c;
+    --muted: #5d636b;
+    --line: #e2e4e1;
+    --accent: #a86d14;
+    --glow: #f4c95d;
+    --line-strong: #c9ccc8;
+    --lamp: #d9a53a;
+    --lamp-glow: rgba(244, 201, 93, 0.25);
+    --lamp-halo: rgba(244, 201, 93, 0);
+    --wing: rgba(23, 25, 28, 0.22);
+    --sans: ui-sans-serif, -apple-system, "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #111315; --surface: #1a1d20; --fg: #e8e9e7; --muted: #9aa0a6;
+      --line: #2a2e32; --accent: #e9b54a; --line-strong: #444a50;
+      --lamp: #ffd76a; --lamp-glow: rgba(255, 215, 106, 0.75); --lamp-halo: rgba(255, 215, 106, 0.35); --wing: rgba(232, 233, 231, 0.3); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #111315; --surface: #1a1d20; --fg: #e8e9e7; --muted: #9aa0a6;
+    --line: #2a2e32; --accent: #e9b54a; --line-strong: #444a50;
+      --lamp: #ffd76a; --lamp-glow: rgba(255, 215, 106, 0.75); --lamp-halo: rgba(255, 215, 106, 0.35); --wing: rgba(232, 233, 231, 0.3); color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-underline-offset: 3px; text-decoration-color: var(--line); }
+  a:hover { text-decoration-color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+  .shell {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 56px;
+    max-width: 960px;
+    margin: 0 auto;
+    padding-block: 44px 56px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+
+  nav { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 44px); align-self: start; display: flex; flex-direction: column; gap: 22px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 17px; text-decoration: none; }
+  .brand a { text-decoration: none; }
+
+  /* The firefly: a theme switch that drifts in a small loop. Its lamp is dim by day and bright at night. */
+  .firefly { position: relative; width: 52px; height: 44px; margin-left: -10px; flex: none; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 10px; }
+  .firefly:hover { background: var(--surface); }
+  .flight { position: absolute; inset: 0; transform: scale(1.6); }
+  .bug, .trail { position: absolute; left: 50%; top: 50%; animation: drift 5.5s ease-in-out infinite; }
+  .bug { width: 18px; height: 12px; margin: -6px 0 0 -9px; }
+  .body { position: absolute; left: 3px; top: 4px; width: 9px; height: 5px; border-radius: 3px; background: var(--fg); }
+  .lamp { position: absolute; left: 10px; top: 3px; width: 7px; height: 7px; border-radius: 50%; background: var(--lamp); box-shadow: 0 0 6px 2px var(--lamp-glow), 0 0 16px 5px var(--lamp-halo); animation: pulse 2.4s ease-in-out infinite; transition: background .4s, box-shadow .4s; }
+  .wing { position: absolute; left: 4px; top: 0; width: 7px; height: 5px; border-radius: 50%; background: var(--wing); transform-origin: 50% 100%; animation: flap .16s ease-in-out infinite alternate; }
+  .w2 { left: 6px; animation-delay: .08s; }
+  .trail { width: 3px; height: 3px; margin: -1.5px 0 0 1px; border-radius: 50%; background: var(--lamp); }
+  .t1 { opacity: .5; animation-delay: -.18s; }
+  .t2 { opacity: .3; animation-delay: -.36s; }
+  .t3 { opacity: .15; animation-delay: -.54s; }
+  @keyframes drift {
+    0%   { transform: translate(-9px, 3px) rotate(-8deg); }
+    25%  { transform: translate(-1px, -6px) rotate(6deg); }
+    50%  { transform: translate(8px, 1px) rotate(10deg); }
+    75%  { transform: translate(0, 7px) rotate(-4deg); }
+    100% { transform: translate(-9px, 3px) rotate(-8deg); }
+  }
+  @keyframes flap { from { transform: scaleY(1) rotate(-12deg); } to { transform: scaleY(.35) rotate(-12deg); } }
+  @keyframes pulse { 50% { filter: brightness(1.25); } }
+  @media (prefers-reduced-motion: reduce) { .bug, .trail, .wing, .lamp { animation: none; } }
+
+  /* Firefly trail divider, borrowed from the logo. */
+  .route { display: flex; align-items: center; gap: 0; margin-top: 6px; font: 11.5px var(--mono); color: var(--muted); overflow-x: auto; }
+  .route span { display: flex; align-items: center; white-space: nowrap; }
+  .route span::before { content: ""; width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--line-strong); margin-right: 8px; }
+  .route span + span::after { order: -1; content: ""; width: 28px; border-top: 1.5px dotted var(--line-strong); margin: 0 8px; }
+  .route span:last-child { color: var(--fg); }
+  .route span:last-child::before { border: 0; background: var(--glow); box-shadow: 0 0 8px 2px color-mix(in srgb, var(--glow) 60%, transparent); }
+  .brand small { font: 12px var(--mono); color: var(--muted); font-weight: 400; }
+  .toc { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .toc a { display: block; padding: 3px 0 3px 12px; border-left: 1px solid var(--line); color: var(--muted); text-decoration: none; font-size: 14px; }
+  .toc a:hover, .toc a.active { color: var(--fg); border-left-color: var(--accent); }
+  .out { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+  .out a { text-decoration: none; }
+  .out a:hover { color: var(--fg); }
+
+  main { max-width: 640px; min-width: 0; }
+  header { display: flex; flex-direction: column; gap: 14px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+  h1 { font-size: 30px; line-height: 1.2; letter-spacing: -0.02em; margin: 0; font-weight: 650; text-wrap: balance; }
+  .lede { margin: 0; color: var(--muted); font-size: 16px; max-width: 54ch; }
+  .install { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 6px 6px 14px; max-width: 360px; }
+  .install code { flex: 1; min-width: 0; font: 13px var(--mono); background: none; padding: 0; }
+  .install button { font: 12px var(--sans); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+  .install button:hover { border-color: var(--accent); }
+  .meta { display: flex; flex-wrap: wrap; gap: 4px 16px; font: 12px var(--mono); color: var(--muted); }
+
+  section { padding-block: 26px; border-bottom: 1px solid var(--line); }
+  h2 { font-size: 18px; letter-spacing: -0.01em; margin: 0 0 12px; font-weight: 620; }
+  p { margin: 0 0 12px; max-width: 64ch; }
+  p:last-child { margin-bottom: 0; }
+  .muted { color: var(--muted); font-size: 14px; }
+  code { font: 0.88em var(--mono); background: var(--surface); padding: 1px 5px; border-radius: 4px; }
+  pre { margin: 0 0 12px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; font: 12.5px/1.6 var(--mono); }
+  pre:last-child { margin-bottom: 0; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .c { color: var(--muted); }
+
+  .features { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 28px; margin: 0; }
+  .features div { min-width: 0; }
+  .features dt { font-weight: 600; font-size: 14px; }
+  .features dd { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+  .features dd code { color: var(--fg); }
+
+  footer { padding-top: 20px; font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 20px; }
+
+  @media (max-width: 760px) {
+    .shell { grid-template-columns: minmax(0, 1fr); gap: 20px; padding-block: 24px 44px; }
+    nav { position: static; gap: 12px; min-width: 0; }
+    .toc { flex-direction: row; overflow-x: auto; }
+    .toc a { white-space: nowrap; border-left: 0; border-bottom: 1px solid var(--line); padding: 6px 12px; }
+    .toc a:hover, .toc a.active { border-bottom-color: var(--accent); }
+    .out { flex-direction: row; flex-wrap: wrap; gap: 4px 16px; }
+    .features { grid-template-columns: minmax(0, 1fr); }
+    h1 { font-size: 26px; }
+  }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+  .tabs button { font: 13px var(--sans); color: var(--muted); background: none; border: 1px solid transparent; border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+  .tabs button[aria-selected="true"] { color: var(--fg); background: var(--surface); border-color: var(--line); }
+  .group { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 18px 0 10px; }
+  .group:first-of-type { margin-top: 0; }
+  ol.steps { margin: 0 0 12px; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+  ol.steps li { padding-left: 4px; max-width: 64ch; }
+  .guides { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+  .guide { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; text-decoration: none; }
+  .guide:hover { border-color: var(--accent); }
+  .guide strong { font-size: 14px; }
+  .guide span { font-size: 13px; color: var(--muted); }
+  .out span { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 2px; }
+  @media (max-width: 760px) { .guides { grid-template-columns: minmax(0, 1fr); } .out span { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <nav aria-label="Sections">
+    <div class="brand">
+      <button class="firefly" id="theme" type="button" aria-label="Switch to dark mode" title="Switch theme">
+        <span class="flight">
+          <span class="trail t3"></span><span class="trail t2"></span><span class="trail t1"></span>
+          <span class="bug"><span class="wing w1"></span><span class="wing w2"></span><span class="body"></span><span class="lamp"></span></span>
+        </span>
+      </button>
+      <a href="#overview">jugnu</a> <small>1.0.0</small>
+    </div>
+    <ul class="toc">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#getting-started">Getting started</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#manual">Manual</a></li>
+      <li><a href="#testing">Testing</a></li>
+      <li><a href="#deep-links">Deep links</a></li>
+      <li><a href="#privacy">Privacy</a></li>
+      <li><a href="#disclaimer">Disclaimer</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+    <div class="out">
+      <span>Links</span>
+      <a href="https://pub.dev/packages/jugnu">pub.dev ↗</a>
+      <a href="https://github.com/sanket-manohar/jugnu">GitHub ↗</a>
+      <a href="https://marketplace.visualstudio.com/items?itemName=sanket-manohar.jugnu">Marketplace extension ↗</a>
+      <a href="package-guide.pdf">Setup guide ↗</a>
+      <a href="https://sanketmanohar.com">sanketmanohar.com ↗</a>
+    </div>
+  </nav>
+
+  <main>
+    <header id="overview">
+      <h1>Navigation tools for go_router apps.</h1>
+      <p class="lede">A Dart package that adds typed results, safe guards, typed params, tab helpers, deep links and testing helpers. And an editor extension that shows, checks and documents every route in your project.</p>
+      <div class="install"><code id="cmd">flutter pub add jugnu</code><button id="copy" type="button">Copy</button></div>
+      <div class="route" aria-hidden="true"><span>/</span><span>/users</span><span>/users/:id</span><span>/users/:id/posts</span></div>
+      <div class="meta"><span>v1.0.0</span><span>BSD-3-Clause</span><span>Android · iOS · Web · Desktop</span></div>
+    </header>
+
+    <section id="getting-started">
+      <h2>Getting started</h2>
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" id="tab-package" aria-selected="true" aria-controls="panel-package">Package</button>
+        <button type="button" role="tab" id="tab-extension" aria-selected="false" aria-controls="panel-extension">Extension</button>
+      </div>
+      <div id="panel-package" role="tabpanel" aria-labelledby="tab-package">
+        <ol class="steps">
+          <li>In your app folder, run <code>flutter pub add jugnu</code>.</li>
+          <li>Import <code>package:jugnu/jugnu.dart</code> where you build your router.</li>
+          <li>In tests, also import <code>package:jugnu/testing.dart</code>.</li>
+        </ol>
+      </div>
+      <div id="panel-extension" role="tabpanel" aria-labelledby="tab-extension" hidden>
+        <ol class="steps">
+          <li>Open the Extensions view and search for <strong>Jugnu for go_router</strong>.</li>
+          <li>Check the publisher is <strong>sanket-manohar</strong>, then install.</li>
+          <li>Open a Flutter project and select the firefly icon in the activity bar.</li>
+        </ol>
+      </div>
+      <p class="muted">Requires Flutter 3.44, Dart 3.12 and go_router 18 or newer.</p>
+    </section>
+
+    <section id="features">
+      <h2>Features</h2>
+      <p class="group">Package</p>
+      <dl class="features">
+        <div><dt>Results</dt><dd><code>pushForResult&lt;T&gt;</code> and <code>popWithResult</code>, with a fallback after a refresh.</dd></div>
+        <div><dt>Guards</dt><dd><code>guards([...])</code> chains sync and async checks without loops.</dd></div>
+        <div><dt>Typed params</dt><dd><code>RouteParam.integer('id')</code>. Values live in the URL.</dd></div>
+        <div><dt>Tabs</dt><dd><code>shell.switchTab</code> keeps each stack; tap again to reset.</dd></div>
+      </dl>
+      <p class="group">Extension</p>
+      <dl class="features">
+        <div><dt>Routes view</dt><dd>Every route as a tree, one click to the code.</dd></div>
+        <div><dt>Completion and warnings</dt><dd>Real paths while you type; typos flagged with a fix.</dd></div>
+        <div><dt>Route diagram</dt><dd>A searchable map of routes and redirects.</dd></div>
+        <div><dt>Route reports</dt><dd>A password-protected PDF of routes and issues.</dd></div>
+      </dl>
+    </section>
+
+    <section id="manual">
+      <h2>Manual</h2>
+      <p>Guard routes and read typed params in a few lines:</p>
+      <pre><code>final userId = RouteParam.integer('id');
+
+final router = GoRouter(
+  refreshListenable: auth,
+  redirect: guards([(context, state) =&gt; auth.signedIn ? null : '/login']),
+  routes: [
+    GoRoute(path: '/users/:id', builder: (_, state) =&gt; UserPage(id: userId.read(state))),
+  ],
+);
+
+final color = await context.pushForResult&lt;Color&gt;('/pick-color');</code></pre>
+      <p class="muted">The guides cover every feature step by step, with screenshots.</p>
+      <div class="guides">
+        <a class="guide" href="package-guide.pdf"><strong>Package Guide</strong><span>Install, integrate and test. 18 pages.</span></a>
+        <a class="guide" href="extension-guide.pdf"><strong>Extension Guide</strong><span>Install and use every feature. 14 pages.</span></a>
+      </div>
+    </section>
+
+    <section id="testing">
+      <h2>Testing</h2>
+      <pre><code>import 'package:jugnu/testing.dart';
+
+await expectRedirect(tester, router, from: '/settings', to: '/login');
+await expectDeepLink(tester, router, 'myapp://open/users/42', opens: '/users/42');</code></pre>
+      <p class="muted"><code>MockGoRouter</code> records navigation for fast widget tests.</p>
+    </section>
+
+    <section id="deep-links">
+      <h2>Deep links</h2>
+      <pre><code>router.deepLinks(scheme: 'https', host: 'example.com')
+    .build('user', pathParameters: {'id': 42});
+<span class="c">// https://example.com/users/42</span>
+
+dart run jugnu:deeplink user id=42 tab=posts --scheme myapp</code></pre>
+    </section>
+
+    <section id="privacy">
+      <h2>Privacy</h2>
+      <p>The package and the extension collect nothing: no analytics, no network requests, no stored data. Everything runs on your machine. This site has no cookies or trackers.</p>
+    </section>
+
+    <section id="disclaimer">
+      <h2>Disclaimer</h2>
+      <p>jugnu is an independent project. Names such as go_router, Flutter and Dart, and any platform or product names, belong to their owners and are used only to describe compatibility. Their mention does not imply any affiliation, sponsorship or endorsement.</p>
+      <p class="muted">The software is provided "as is", without warranty of any kind, and the author accepts no responsibility for its use. See the BSD-3-Clause license for the full terms.</p>
+    </section>
+
+    <section id="about">
+      <h2>About</h2>
+      <p>Designed and developed in India by <strong>Sanket Santosh Vidya Manohar</strong>.</p>
+      <p class="muted"><a href="https://sanketmanohar.com">sanketmanohar.com</a></p>
+    </section>
+
+    <footer>
+      <span>© 2026 Sanket Santosh Vidya Manohar</span>
+      <span>BSD-3-Clause License</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+  const copy = document.getElementById('copy');
+  copy.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(document.getElementById('cmd').textContent);
+      copy.textContent = 'Copied';
+    } catch {
+      getSelection().selectAllChildren(document.getElementById('cmd'));
+      copy.textContent = 'Press ⌘C';
+    }
+    setTimeout(() => (copy.textContent = 'Copy'), 1600);
+  });
+
+  const root = document.documentElement;
+  const toggle = document.getElementById('theme');
+  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  const label = () => toggle.setAttribute('aria-label', isDark() ? 'Switch to light mode' : 'Switch to dark mode');
+  try { const saved = localStorage.getItem('jugnu-theme'); if (saved) root.dataset.theme = saved; } catch {}
+  label();
+  toggle.addEventListener('click', () => {
+    root.dataset.theme = isDark() ? 'light' : 'dark';
+    try { localStorage.setItem('jugnu-theme', root.dataset.theme); } catch {}
+    label();
+  });
+
+  const tabs = [...document.querySelectorAll('[role="tab"]')];
+  const commands = { 'tab-package': 'flutter pub add jugnu', 'tab-extension': 'ext install sanket-manohar.jugnu' };
+  tabs.forEach((tab) => tab.addEventListener('click', () => {
+    tabs.forEach((other) => {
+      other.setAttribute('aria-selected', String(other === tab));
+      document.getElementById(other.getAttribute('aria-controls')).hidden = other !== tab;
+    });
+    document.getElementById('cmd').textContent = commands[tab.id];
+  }));
+
+  const links = [...document.querySelectorAll('.toc a')];
+  const sections = links.map((link) => document.querySelector(link.getAttribute('href')));
+  const mark = () => {
+    let current = sections[0];
+    for (const section of sections) if (section.getBoundingClientRect().top < 120) current = section;
+    links.forEach((link, i) => link.classList.toggle('active', sections[i] === current));
+  };
+  addEventListener('scroll', mark, { passive: true });
+  mark();
+</script>
+</body>
+</html>

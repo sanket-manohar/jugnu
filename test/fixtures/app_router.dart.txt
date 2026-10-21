@@ -1,0 +1,36 @@
+// Routes used by the deeplink command tests.
+final router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/',
+      name: 'home',
+      builder: (context, state) => const HomePage(),
+      routes: [
+        GoRoute(
+          path: 'users/:id',
+          name: 'user',
+          builder: (context, state) => UserPage(id: state.pathParameters['id']!),
+          routes: [
+            GoRoute(path: 'posts/:postId', name: 'post', builder: _post),
+          ],
+        ),
+      ],
+    ),
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, shell) => Shell(shell: shell),
+      branches: [
+        StatefulShellBranch(routes: [
+          GoRoute(path: '/feed', name: 'feed', builder: _feed),
+        ]),
+        StatefulShellBranch(routes: <RouteBase>[
+          GoRoute(path: "/settings", builder: _settings), /* GoRoute(path: '/hidden') */
+        ]),
+      ],
+    ),
+    GoRoute(path: '/search', name: 'search', redirect: (_, s) => '/x/$s'),
+    GoRoute(path: '/dynamic/$prefix', name: 'skipped'),
+  ],
+);
+
+@TypedGoRoute<AboutRoute>(path: '/about', routes: [TypedGoRoute<TeamRoute>(path: 'team')])
+class AboutRoute extends GoRouteData {}

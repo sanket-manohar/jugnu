@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640">
+  <defs>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f4c95d" stop-opacity="0.5"/>
+      <stop offset="0.45" stop-color="#f4c95d" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#f4c95d" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#ffffff" fill-opacity="0.05"/>
+    </pattern>
+  </defs>
+  <rect width="1280" height="640" fill="#15181b"/>
+  <rect width="1280" height="640" fill="url(#grid)"/>
+  <g transform="translate(140 150) scale(0.6) translate(-120 -60)">
+    <circle cx="306" cy="142" r="104" fill="url(#glow)"/>
+    <path d="M306 226 V338 Q306 404 240 404 Q194 404 172 368" fill="none" stroke="#eceae4" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="306" cy="142" r="31" fill="#f4c95d"/>
+  </g>
+  <text x="370" y="290" font-family="Inter Display, Inter, sans-serif" font-weight="600" font-size="110" letter-spacing="-3.3" fill="#eceae4">jugnu</text>
+  <text x="374" y="358.2" font-family="Inter, sans-serif" font-size="29.700000000000003" fill="#a3a9af">Small, focused helpers for go_router apps.</text>
+  <text x="374" y="405.5" font-family="DejaVu Sans Mono, monospace" font-size="18.700000000000003" fill="#e0a92e" letter-spacing="0.5">results · guards · typed params · tabs · deep links · testing</text>
+  <line x1="380" y1="470" x2="995.0" y2="470" stroke="#eceae4" stroke-opacity="0.18" stroke-width="2" stroke-dasharray="2 8" stroke-linecap="round"/>
+  <circle cx="380.0" cy="470" r="5" fill="#15181b" stroke="#eceae4" stroke-opacity="0.45" stroke-width="2"/>
+  <text x="380.0" y="500" text-anchor="middle" font-family="DejaVu Sans Mono, monospace" font-size="13" fill="#7d848b">/</text>
+  <circle cx="585.0" cy="470" r="5" fill="#15181b" stroke="#eceae4" stroke-opacity="0.45" stroke-width="2"/>
+  <text x="585.0" y="500" text-anchor="middle" font-family="DejaVu Sans Mono, monospace" font-size="13" fill="#7d848b">/users</text>
+  <circle cx="790.0" cy="470" r="5" fill="#15181b" stroke="#eceae4" stroke-opacity="0.45" stroke-width="2"/>
+  <text x="790.0" y="500" text-anchor="middle" font-family="DejaVu Sans Mono, monospace" font-size="13" fill="#7d848b">/users/:id</text>
+  <circle cx="995.0" cy="470" r="34" fill="url(#glow)"/><circle cx="995.0" cy="470" r="7" fill="#f4c95d"/>
+  <text x="995.0" y="500" text-anchor="middle" font-family="DejaVu Sans Mono, monospace" font-size="13" fill="#eceae4">/users/:id/posts</text>
+</svg>

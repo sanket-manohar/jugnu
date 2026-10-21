@@ -1,0 +1,11 @@
+analyzer:
+  exclude:
+    - build/**
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    - public_member_api_docs
+    - prefer_final_locals
+    - prefer_single_quotes
+    - unawaited_futures
